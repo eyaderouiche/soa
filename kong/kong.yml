@@ -1,0 +1,38 @@
+_format_version: "3.0"
+
+services:
+  - name: accounts-api
+    host: accounts-upstream
+    port: 8000
+    protocol: http
+    retries: 2
+    routes:
+      - name: accounts-route
+        paths:
+          - /api/accounts
+        strip_path: true
+
+upstreams:
+  - name: accounts-upstream
+    algorithm: round-robin
+    targets:
+      - target: accounts-1:8000
+        weight: 100
+      - target: accounts-2:8000
+        weight: 100
+consumers:
+  - username: fintech-free
+    keyauth_credentials:
+      - key: demo-free-key
+
+  - username: fintech-premium
+    keyauth_credentials:
+      - key: demo-premium-key
+
+plugins:
+  - name: key-auth
+    service: accounts-api
+    config:
+      key_names:
+        - apikey
+      hide_credentials: true
